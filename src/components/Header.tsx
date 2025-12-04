@@ -47,11 +47,11 @@ export function Header({ mindmapRef }: HeaderProps) {
           <div className="flex items-center gap-3">
             {mindMapData && (
               <>
-                <Button variant="ghost" size="sm" onClick={reset}>
+                <Button variant="gold" size="sm" onClick={reset}>
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Novo
                 </Button>
-                
+
                 <ExportMenu mindmapRef={mindmapRef} />
               </>
             )}

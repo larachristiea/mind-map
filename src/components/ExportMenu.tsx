@@ -123,7 +123,8 @@ export function ExportMenu({ mindmapRef }: ExportMenuProps) {
   return (
     <div className="relative">
       <Button
-        variant="outline"
+        variant="gold"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
         disabled={!mindMapData}
       >
