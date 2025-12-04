@@ -1,4 +1,4 @@
-// PNG Export - SIMPLIFICADO E FUNCIONAL
+// PNG Export - PRESERVA ESTILOS
 export async function exportPng(
   svgElement: SVGSVGElement,
   filename: string,
@@ -11,39 +11,47 @@ export async function exportPng(
       // Clonar SVG
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
 
-      // Pegar dimensões
-      const gElement = clonedSvg.querySelector('g');
-      if (!gElement) {
-        reject(new Error('Conteúdo não encontrado'));
-        return;
-      }
+      // Pegar dimensões do SVG original
+      const bbox = svgElement.getBoundingClientRect();
+      const width = bbox.width;
+      const height = bbox.height;
 
-      const bbox = gElement.getBBox();
-      const padding = 40;
-      const width = bbox.width + padding * 2;
-      const height = bbox.height + padding * 2;
+      // Copiar estilos computados
+      const allElements = clonedSvg.querySelectorAll('*');
+      const originalElements = svgElement.querySelectorAll('*');
 
-      // Configurar SVG
-      clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`);
+      allElements.forEach((el, idx) => {
+        const originalEl = originalElements[idx];
+        if (originalEl) {
+          const computed = window.getComputedStyle(originalEl);
+          (el as HTMLElement).style.fill = computed.fill;
+          (el as HTMLElement).style.stroke = computed.stroke;
+          (el as HTMLElement).style.strokeWidth = computed.strokeWidth;
+          (el as HTMLElement).style.fontFamily = computed.fontFamily;
+          (el as HTMLElement).style.fontSize = computed.fontSize;
+          (el as HTMLElement).style.fontWeight = computed.fontWeight;
+        }
+      });
+
+      // Configurar dimensões
       clonedSvg.setAttribute('width', String(width));
       clonedSvg.setAttribute('height', String(height));
       clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
       // Fundo branco
       const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      bgRect.setAttribute('x', String(bbox.x - padding));
-      bgRect.setAttribute('y', String(bbox.y - padding));
       bgRect.setAttribute('width', String(width));
       bgRect.setAttribute('height', String(height));
       bgRect.setAttribute('fill', 'white');
+      bgRect.setAttribute('x', '0');
+      bgRect.setAttribute('y', '0');
       clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
 
       // Converter para data URL
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
-      const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
-      const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
 
-      // Criar imagem
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -59,7 +67,8 @@ export async function exportPng(
 
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob((blob) => {
           if (!blob) {
@@ -67,20 +76,25 @@ export async function exportPng(
             return;
           }
 
-          const url = URL.createObjectURL(blob);
+          const pngUrl = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = url;
+          link.href = pngUrl;
           link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+          URL.revokeObjectURL(pngUrl);
           URL.revokeObjectURL(url);
           resolve();
         }, 'image/png', 1.0);
       };
 
-      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
-      img.src = dataUrl;
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Falha ao carregar imagem'));
+      };
+
+      img.src = url;
 
     } catch (err) {
       reject(err);

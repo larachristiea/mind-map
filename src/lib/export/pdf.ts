@@ -1,4 +1,4 @@
-// PDF Export - SIMPLIFICADO E FUNCIONAL
+// PDF Export - PRESERVA ESTILOS
 import { jsPDF } from 'jspdf';
 
 export async function exportPdf(
@@ -10,34 +10,43 @@ export async function exportPdf(
       // Clonar SVG
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
 
-      // Pegar dimensões
-      const gElement = clonedSvg.querySelector('g');
-      if (!gElement) {
-        reject(new Error('Conteúdo não encontrado'));
-        return;
-      }
+      // Pegar dimensões do SVG original
+      const bbox = svgElement.getBoundingClientRect();
+      const width = bbox.width;
+      const height = bbox.height;
 
-      const bbox = gElement.getBBox();
-      const padding = 40;
-      const width = bbox.width + padding * 2;
-      const height = bbox.height + padding * 2;
+      // Copiar estilos computados
+      const allElements = clonedSvg.querySelectorAll('*');
+      const originalElements = svgElement.querySelectorAll('*');
 
-      // Configurar SVG
-      clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`);
+      allElements.forEach((el, idx) => {
+        const originalEl = originalElements[idx];
+        if (originalEl) {
+          const computed = window.getComputedStyle(originalEl);
+          (el as HTMLElement).style.fill = computed.fill;
+          (el as HTMLElement).style.stroke = computed.stroke;
+          (el as HTMLElement).style.strokeWidth = computed.strokeWidth;
+          (el as HTMLElement).style.fontFamily = computed.fontFamily;
+          (el as HTMLElement).style.fontSize = computed.fontSize;
+          (el as HTMLElement).style.fontWeight = computed.fontWeight;
+        }
+      });
+
+      // Configurar dimensões
       clonedSvg.setAttribute('width', String(width));
       clonedSvg.setAttribute('height', String(height));
       clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
       // Fundo branco
       const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      bgRect.setAttribute('x', String(bbox.x - padding));
-      bgRect.setAttribute('y', String(bbox.y - padding));
       bgRect.setAttribute('width', String(width));
       bgRect.setAttribute('height', String(height));
       bgRect.setAttribute('fill', 'white');
+      bgRect.setAttribute('x', '0');
+      bgRect.setAttribute('y', '0');
       clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
 
-      // Converter para imagem de alta qualidade
+      // Converter para imagem
       const scale = 4;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -51,15 +60,16 @@ export async function exportPdf(
       canvas.height = height * scale;
 
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
-      const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
-      const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
 
       const img = new Image();
       img.onload = () => {
         try {
           ctx.fillStyle = 'white';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          ctx.scale(scale, scale);
+          ctx.drawImage(img, 0, 0, width, height);
 
           const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
@@ -99,15 +109,21 @@ export async function exportPdf(
           const finalFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
           pdf.save(finalFilename);
 
+          URL.revokeObjectURL(url);
           resolve();
         } catch (err) {
           console.error('Erro ao gerar PDF:', err);
+          URL.revokeObjectURL(url);
           reject(err);
         }
       };
 
-      img.onerror = () => reject(new Error('Falha ao processar'));
-      img.src = dataUrl;
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Falha ao processar'));
+      };
+
+      img.src = url;
 
     } catch (err) {
       reject(err);

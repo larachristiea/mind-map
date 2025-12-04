@@ -1,35 +1,42 @@
-// SVG Export - SIMPLIFICADO E FUNCIONAL
+// SVG Export - PRESERVA ESTILOS
 export async function exportSvg(
   svgElement: SVGSVGElement,
   filename: string
 ): Promise<void> {
   try {
-    // Clonar SVG
+    // Clonar TUDO
     const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
 
-    // Pegar dimensões do conteúdo
-    const gElement = clonedSvg.querySelector('g');
-    if (!gElement) throw new Error('Conteúdo não encontrado');
+    // Copiar estilos computados
+    const allElements = clonedSvg.querySelectorAll('*');
+    const originalElements = svgElement.querySelectorAll('*');
 
-    const bbox = gElement.getBBox();
-    const padding = 40;
+    allElements.forEach((el, idx) => {
+      const originalEl = originalElements[idx];
+      if (originalEl) {
+        const computed = window.getComputedStyle(originalEl);
+        // Aplicar estilos importantes
+        (el as HTMLElement).style.fill = computed.fill;
+        (el as HTMLElement).style.stroke = computed.stroke;
+        (el as HTMLElement).style.strokeWidth = computed.strokeWidth;
+        (el as HTMLElement).style.fontFamily = computed.fontFamily;
+        (el as HTMLElement).style.fontSize = computed.fontSize;
+      }
+    });
 
-    // Configurar viewBox e dimensões
-    clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${bbox.width + padding * 2} ${bbox.height + padding * 2}`);
-    clonedSvg.setAttribute('width', String(bbox.width + padding * 2));
-    clonedSvg.setAttribute('height', String(bbox.height + padding * 2));
+    // Garantir namespace
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-    // Fundo branco
+    // Adicionar fundo branco como PRIMEIRO elemento
     const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bgRect.setAttribute('x', String(bbox.x - padding));
-    bgRect.setAttribute('y', String(bbox.y - padding));
-    bgRect.setAttribute('width', String(bbox.width + padding * 2));
-    bgRect.setAttribute('height', String(bbox.height + padding * 2));
+    bgRect.setAttribute('width', '100%');
+    bgRect.setAttribute('height', '100%');
     bgRect.setAttribute('fill', 'white');
+    bgRect.setAttribute('x', '0');
+    bgRect.setAttribute('y', '0');
     clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
 
-    // Serializar e download
+    // Serializar
     const svgData = new XMLSerializer().serializeToString(clonedSvg);
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
