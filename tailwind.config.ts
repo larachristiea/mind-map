@@ -9,19 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Cores customizáveis - defina sua marca aqui
+        // Cores customizáveis - Tema Dourado
         brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#ffd700', // Gold
+          600: '#d4af37', // Dark Gold
+          700: '#b8941e',
+          800: '#9c7c17',
+          900: '#7c6210',
+          950: '#5c4808',
+        },
+        gold: {
+          DEFAULT: '#ffd700',
+          light: '#ffe44d',
+          dark: '#d4af37',
         },
       },
       animation: {

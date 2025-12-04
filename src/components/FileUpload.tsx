@@ -77,11 +77,11 @@ export function FileUpload() {
       <motion.div
         animate={{
           scale: isDragging ? 1.02 : 1,
-          borderColor: isDragging ? '#3b82f6' : '#e5e7eb',
+          borderColor: isDragging ? '#ffd700' : 'rgba(255, 255, 255, 0.1)',
         }}
         className={cn(
-          'relative border-2 border-dashed rounded-2xl p-8 transition-colors',
-          isDragging ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-300',
+          'relative border-2 border-dashed rounded-2xl p-8 transition-colors glass-card',
+          isDragging && 'border-gold bg-gold/10',
           isProcessing && 'pointer-events-none'
         )}
         onDragOver={handleDragOver}
@@ -109,7 +109,7 @@ export function FileUpload() {
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   {/* Background circle */}
                   <circle
-                    className="text-gray-200"
+                    className="text-white/10"
                     strokeWidth="8"
                     stroke="currentColor"
                     fill="transparent"
@@ -119,7 +119,7 @@ export function FileUpload() {
                   />
                   {/* Progress circle */}
                   <circle
-                    className="text-brand-600 transition-all duration-300"
+                    className="text-gold transition-all duration-300"
                     strokeWidth="8"
                     strokeDasharray={264}
                     strokeDashoffset={264 - (processingProgress / 100) * 264}
@@ -133,7 +133,7 @@ export function FileUpload() {
                 </svg>
                 {/* Percentage */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-gray-700">
+                  <span className="text-lg font-bold text-gold">
                     {Math.round(processingProgress)}%
                   </span>
                 </div>
@@ -141,31 +141,31 @@ export function FileUpload() {
               
               {/* File name */}
               {file && (
-                <div className="flex items-center gap-2 mb-3 px-3 py-1.5 bg-white rounded-lg shadow-sm">
+                <div className="flex items-center gap-2 mb-3 px-3 py-1.5 bg-white/10 rounded-lg border border-white/10">
                   {getFileIcon(file.name)}
-                  <span className="text-sm text-gray-600 max-w-[200px] truncate">
+                  <span className="text-sm text-gray-300 max-w-[200px] truncate">
                     {file.name}
                   </span>
                 </div>
               )}
-              
+
               {/* Status message */}
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-gray-200">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="font-medium">
                   {processingMessage || 'Processando...'}
                 </span>
               </div>
-              
+
               {/* OCR hint */}
               {isOcr && (
-                <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                <p className="text-sm text-gold-light mt-2 flex items-center gap-1">
                   Reconhecendo texto nas imagens...
                 </p>
               )}
-              
+
               {/* General hint */}
-              <p className="text-xs text-gray-400 mt-3">
+              <p className="text-xs text-gray-500 mt-3">
                 Isso pode levar alguns segundos
               </p>
             </motion.div>
@@ -176,16 +176,16 @@ export function FileUpload() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center"
             >
-              <CheckCircle2 className="w-12 h-12 text-green-500 mb-4" />
+              <CheckCircle2 className="w-12 h-12 text-green-400 mb-4" />
               <div className="flex items-center gap-3 mb-2">
                 {getFileIcon(file.name)}
                 <div className="text-left">
-                  <p className="font-medium text-gray-900">{file.name}</p>
-                  <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="font-medium text-gray-200">{file.name}</p>
+                  <p className="text-sm text-gray-400">{formatFileSize(file.size)}</p>
                 </div>
               </div>
-              <p className="text-sm text-green-600 font-medium">Processado com sucesso!</p>
-              <p className="text-xs text-gray-400 mt-2">Arraste outro arquivo para substituir</p>
+              <p className="text-sm text-green-400 font-medium">Processado com sucesso!</p>
+              <p className="text-xs text-gray-500 mt-2">Arraste outro arquivo para substituir</p>
             </motion.div>
           ) : (
             // Estado inicial
@@ -194,29 +194,29 @@ export function FileUpload() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center"
             >
-              <div className="w-16 h-16 rounded-full bg-brand-100 flex items-center justify-center mb-4">
-                <Upload className="w-8 h-8 text-brand-600" />
+              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
+                <Upload className="w-8 h-8 text-gold" />
               </div>
-              <p className="text-lg font-medium text-gray-900 mb-1">
+              <p className="text-lg font-medium text-white mb-1">
                 Arraste seu arquivo aqui
               </p>
-              <p className="text-gray-500 mb-4">
-                ou <span className="text-brand-600 font-medium">clique para selecionar</span>
+              <p className="text-gray-400 mb-4">
+                ou <span className="text-gold font-medium">clique para selecionar</span>
               </p>
-              <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
-                <span className="px-2 py-1 bg-white rounded border">PDF</span>
-                <span className="px-2 py-1 bg-white rounded border">PPTX</span>
-                <span className="px-2 py-1 bg-white rounded border">DOCX</span>
-                <span className="px-2 py-1 bg-white rounded border">TXT</span>
-                <span className="px-2 py-1 bg-white rounded border border-blue-200 bg-blue-50 text-blue-600">
+              <div className="flex flex-wrap justify-center gap-2 text-xs">
+                <span className="px-2 py-1 bg-white/5 rounded border border-white/10 text-gray-400">PDF</span>
+                <span className="px-2 py-1 bg-white/5 rounded border border-white/10 text-gray-400">PPTX</span>
+                <span className="px-2 py-1 bg-white/5 rounded border border-white/10 text-gray-400">DOCX</span>
+                <span className="px-2 py-1 bg-white/5 rounded border border-white/10 text-gray-400">TXT</span>
+                <span className="px-2 py-1 bg-gold/10 rounded border border-gold/30 text-gold">
                   MD (recomendado)
                 </span>
               </div>
-              
+
               {/* Aviso sobre limitações */}
-              <div className="mt-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 max-w-md">
+              <div className="mt-4 px-4 py-2 bg-gold/10 border border-gold/30 rounded-lg text-xs text-gold-light max-w-md">
                 <p className="font-medium mb-1">Dica para melhores resultados:</p>
-                <p>Arquivos com <strong>texto digitado</strong> funcionam melhor. PPTs/PDFs feitos só com imagens podem não ser lidos corretamente.</p>
+                <p className="text-gray-400">Arquivos com <strong className="text-gold">texto digitado</strong> funcionam melhor. PPTs/PDFs feitos só com imagens podem não ser lidos corretamente.</p>
               </div>
             </motion.div>
           )}

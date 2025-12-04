@@ -15,6 +15,7 @@ import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { DragDropEditor } from '@/components/DragDropEditor';
 import { MindmapPreview, MindmapPreviewRef } from '@/components/MindmapPreview';
 import { PresentationMode } from '@/components/PresentationMode';
+import { Particles } from '@/components/Particles';
 
 export default function Home() {
   const { processingStatus, activeTab, mindMapData } = useMindMapStore();
@@ -35,14 +36,16 @@ export default function Home() {
   } as React.RefObject<HTMLDivElement>;
   
   return (
-    <div className="min-h-screen gradient-bg">
-      <Header 
-        svgRef={svgRef} 
+    <div className="min-h-screen animated-hero-bg">
+      <Particles />
+
+      <Header
+        svgRef={svgRef}
         containerRef={containerRef}
         mindmapRef={mindmapRef}
       />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <AnimatePresence mode="wait">
           {!isReady ? (
             // Tela de Upload
@@ -55,23 +58,23 @@ export default function Home() {
             >
               {/* Hero */}
               <div className="text-center mb-12">
-                <motion.h1 
+                <motion.h1
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+                  className="text-4xl md:text-5xl font-bold text-white mb-4"
                 >
                   Transforme documentos em{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-brand-400">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-gold-light">
                     Mind Maps
                   </span>
                 </motion.h1>
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="text-lg text-gray-600 max-w-2xl mx-auto"
+                  className="text-lg text-gray-300 max-w-2xl mx-auto"
                 >
-                  Carregue um PDF, apresentação ou texto e veja a mágica acontecer. 
+                  Carregue um PDF, apresentação ou texto e veja a mágica acontecer.
                   Edite, organize e exporte seu mapa mental interativo.
                 </motion.p>
               </div>
@@ -129,10 +132,10 @@ export default function Home() {
                 ].map((feature, i) => (
                   <div
                     key={i}
-                    className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                    className="p-6 glass-card rounded-xl"
                   >
-                    <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                    <p className="text-sm text-gray-500">{feature.description}</p>
+                    <h3 className="font-semibold text-gold mb-1">{feature.title}</h3>
+                    <p className="text-sm text-gray-400">{feature.description}</p>
                   </div>
                 ))}
               </motion.div>
@@ -153,17 +156,17 @@ export default function Home() {
               {/* Main Content - FORÇAR 2 COLUNAS */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', height: '600px' }}>
                 {/* Editor */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="glass-card rounded-xl overflow-hidden">
                   {activeTab === 'text' ? (
                     <MarkdownEditor />
                   ) : (
                     <DragDropEditor />
                   )}
                 </div>
-                
+
                 {/* Preview */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                  <MindmapPreview 
+                <div className="glass-card rounded-xl overflow-hidden">
+                  <MindmapPreview
                     ref={mindmapRef}
                     onEnterPresentation={() => setShowPresentation(true)}
                   />
@@ -175,14 +178,14 @@ export default function Home() {
       </main>
       
       {/* Footer */}
-      <footer className="py-8 text-center text-sm text-gray-500">
+      <footer className="py-8 text-center text-sm text-gray-400 relative z-10">
         <p>
           Feito por{' '}
-          <a 
-            href="https://instagram.com/larachristiea" 
-            target="_blank" 
+          <a
+            href="https://instagram.com/larachristiea"
+            target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-600 hover:underline"
+            className="text-gold hover:text-gold-light transition-colors hover:underline"
           >
             @larachristiea
           </a>
