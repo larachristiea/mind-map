@@ -1,32 +1,38 @@
-// PDF Export - Alta resolução, orientação automática
+// PDF Export - Captura real do mapa mental
 import { jsPDF } from 'jspdf';
 
 interface PdfOptions {
-  title?: string;
-  orientation?: 'portrait' | 'landscape' | 'auto';
   scale?: number;
 }
 
 export async function exportPdf(
   svgElement: SVGSVGElement,
   filename: string,
-  options: PdfOptions = {},
+  _options: PdfOptions = {},
   _markdown?: string
 ): Promise<void> {
-  const { scale = 4 } = options; // Alta resolução
-  
-  // Pegar dimensões reais do SVG
-  const svgRect = svgElement.getBoundingClientRect();
-  const bbox = svgElement.getBBox();
-  
-  const svgWidth = Math.max(svgRect.width, bbox.width + 50, 800);
-  const svgHeight = Math.max(svgRect.height, bbox.height + 50, 600);
-  
-  // Orientação baseada no conteúdo
-  const isLandscape = svgWidth > svgHeight;
   
   return new Promise((resolve, reject) => {
     try {
+      // Pegar o grupo principal do markmap (contém todo o conteúdo)
+      const gElement = svgElement.querySelector('g');
+      if (!gElement) {
+        reject(new Error('Conteúdo do mapa não encontrado'));
+        return;
+      }
+      
+      // Bounding box real do conteúdo
+      const contentBBox = gElement.getBBox();
+      
+      // Adicionar margem
+      const padding = 50;
+      const contentWidth = contentBBox.width + padding * 2;
+      const contentHeight = contentBBox.height + padding * 2;
+      
+      // Scale alto para qualidade
+      const scale = 5;
+      
+      // Criar canvas
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
@@ -35,18 +41,35 @@ export async function exportPdf(
         return;
       }
       
-      canvas.width = svgWidth * scale;
-      canvas.height = svgHeight * scale;
+      canvas.width = contentWidth * scale;
+      canvas.height = contentHeight * scale;
       
+      // Fundo branco
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Clonar SVG
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-      clonedSvg.setAttribute('width', String(svgWidth));
-      clonedSvg.setAttribute('height', String(svgHeight));
-      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       
+      // Ajustar viewBox para mostrar todo o conteúdo
+      const viewBoxX = contentBBox.x - padding;
+      const viewBoxY = contentBBox.y - padding;
+      clonedSvg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${contentWidth} ${contentHeight}`);
+      clonedSvg.setAttribute('width', String(contentWidth * scale));
+      clonedSvg.setAttribute('height', String(contentHeight * scale));
+      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clonedSvg.style.backgroundColor = 'white';
+      
+      // Adicionar fundo branco como rect
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('x', String(viewBoxX));
+      bgRect.setAttribute('y', String(viewBoxY));
+      bgRect.setAttribute('width', String(contentWidth));
+      bgRect.setAttribute('height', String(contentHeight));
+      bgRect.setAttribute('fill', 'white');
+      clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
+      
+      // Serializar
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
       const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
       const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
@@ -55,12 +78,14 @@ export async function exportPdf(
       
       img.onload = () => {
         try {
-          ctx.scale(scale, scale);
-          ctx.drawImage(img, 0, 0, svgWidth, svgHeight);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
           const imgData = canvas.toDataURL('image/png', 1.0);
           
-          // PDF com orientação automática
+          // Orientação baseada no conteúdo
+          const isLandscape = contentWidth > contentHeight;
+          
+          // Criar PDF com tamanho proporcional ao conteúdo
           const pdf = new jsPDF({
             orientation: isLandscape ? 'landscape' : 'portrait',
             unit: 'mm',
@@ -69,13 +94,13 @@ export async function exportPdf(
           
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
-          const margin = 5;
+          const margin = 10;
           
           const availableWidth = pageWidth - (margin * 2);
           const availableHeight = pageHeight - (margin * 2);
           
-          // Manter proporção e preencher a página
-          const imgRatio = canvas.width / canvas.height;
+          // Calcular tamanho final mantendo proporção
+          const imgRatio = contentWidth / contentHeight;
           const pageRatio = availableWidth / availableHeight;
           
           let finalWidth: number;
@@ -89,8 +114,9 @@ export async function exportPdf(
             finalWidth = availableHeight * imgRatio;
           }
           
-          const x = (pageWidth - finalWidth) / 2;
-          const y = (pageHeight - finalHeight) / 2;
+          // Centralizar
+          const x = margin + (availableWidth - finalWidth) / 2;
+          const y = margin + (availableHeight - finalHeight) / 2;
           
           pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
           
@@ -99,14 +125,20 @@ export async function exportPdf(
           
           resolve();
         } catch (err) {
+          console.error('Erro ao gerar PDF:', err);
           reject(err);
         }
       };
       
-      img.onerror = () => reject(new Error('Falha ao processar SVG'));
+      img.onerror = (err) => {
+        console.error('Erro ao carregar imagem:', err);
+        reject(new Error('Falha ao processar'));
+      };
+      
       img.src = dataUrl;
       
     } catch (err) {
+      console.error('Erro:', err);
       reject(err);
     }
   });
