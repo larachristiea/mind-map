@@ -1,89 +1,89 @@
-// PNG Export
-
+// PNG Export - SIMPLIFICADO E FUNCIONAL
 export async function exportPng(
   svgElement: SVGSVGElement,
   filename: string,
-  options: { scale?: number } | number = 2
+  options: { scale?: number } | number = 3
 ): Promise<void> {
-  const scale = typeof options === 'number' ? options : (options.scale ?? 2);
-  
-  // Clonar e preparar SVG
-  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  
-  // Pegar dimensões
-  const bbox = svgElement.getBBox();
-  const width = svgElement.clientWidth || bbox.width + 40;
-  const height = svgElement.clientHeight || bbox.height + 40;
-  
-  clonedSvg.setAttribute('width', String(width));
-  clonedSvg.setAttribute('height', String(height));
-  clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  
-  // Adicionar fundo branco
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  rect.setAttribute('width', '100%');
-  rect.setAttribute('height', '100%');
-  rect.setAttribute('fill', 'white');
-  clonedSvg.insertBefore(rect, clonedSvg.firstChild);
-  
-  // Inline styles para garantir renderização correta
-  const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-  styleElement.textContent = `
-    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .markmap-node-text { fill: currentColor; }
-  `;
-  clonedSvg.insertBefore(styleElement, clonedSvg.firstChild);
-  
-  const svgData = new XMLSerializer().serializeToString(clonedSvg);
-  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(svgBlob);
-  
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  
+  const scale = typeof options === 'number' ? options : (options.scale ?? 3);
+
   return new Promise((resolve, reject) => {
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      if (!ctx) {
-        reject(new Error('Canvas context not available'));
+    try {
+      // Clonar SVG
+      const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+
+      // Pegar dimensões
+      const gElement = clonedSvg.querySelector('g');
+      if (!gElement) {
+        reject(new Error('Conteúdo não encontrado'));
         return;
       }
-      
-      canvas.width = width * scale;
-      canvas.height = height * scale;
-      
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.scale(scale, scale);
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error('Failed to create blob'));
+
+      const bbox = gElement.getBBox();
+      const padding = 40;
+      const width = bbox.width + padding * 2;
+      const height = bbox.height + padding * 2;
+
+      // Configurar SVG
+      clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`);
+      clonedSvg.setAttribute('width', String(width));
+      clonedSvg.setAttribute('height', String(height));
+      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+      // Fundo branco
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('x', String(bbox.x - padding));
+      bgRect.setAttribute('y', String(bbox.y - padding));
+      bgRect.setAttribute('width', String(width));
+      bgRect.setAttribute('height', String(height));
+      bgRect.setAttribute('fill', 'white');
+      clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
+
+      // Converter para data URL
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
+      const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+      const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+
+      // Criar imagem
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Canvas não suportado'));
           return;
         }
-        
-        const pngUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = pngUrl;
-        link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(pngUrl);
-        URL.revokeObjectURL(url);
-        resolve();
-      }, 'image/png', 1.0);
-    };
-    
-    img.onerror = (e) => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load SVG as image'));
-    };
-    
-    img.src = url;
+
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Falha ao criar imagem'));
+            return;
+          }
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          resolve();
+        }, 'image/png', 1.0);
+      };
+
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.src = dataUrl;
+
+    } catch (err) {
+      reject(err);
+    }
   });
 }
