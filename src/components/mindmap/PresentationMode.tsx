@@ -114,6 +114,7 @@ export function PresentationMode({ markdown }: PresentationModeProps) {
     return () => {
       exitFullscreen();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

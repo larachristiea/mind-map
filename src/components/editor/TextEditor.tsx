@@ -6,7 +6,6 @@
 'use client';
 
 import { useCallback, useRef, useEffect, useState } from 'react';
-import { debounce } from '@/lib/utils/helpers';
 
 interface TextEditorProps {
   value: string;
@@ -16,6 +15,7 @@ interface TextEditorProps {
 export function TextEditor({ value, onChange }: TextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [lineCount, setLineCount] = useState(1);
 
   // Atualiza contador de linhas
@@ -31,18 +31,13 @@ export function TextEditor({ value, onChange }: TextEditorProps) {
     }
   }, []);
 
-  // Debounce para performance
-  const debouncedOnChange = useCallback(
-    debounce((newValue: string) => {
-      onChange(newValue);
-    }, 150),
-    [onChange]
-  );
-
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    debouncedOnChange(newValue);
-  }, [debouncedOnChange]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onChange(newValue);
+    }, 150);
+  }, [onChange]);
 
   // Handle Tab key
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -85,12 +80,20 @@ export function TextEditor({ value, onChange }: TextEditorProps) {
         onChange={handleChange}
         onScroll={handleScroll}
         onKeyDown={handleKeyDown}
-        className="editor-textarea flex-1 w-full h-full p-4 bg-transparent text-[rgb(var(--foreground))] resize-none focus:outline-none"
-        placeholder="# Título Principal&#10;## Seção&#10;- Item 1&#10;- Item 2"
+        className="flex-1 editor-textarea p-4 bg-[rgb(var(--background))] resize-none focus:outline-none"
+        placeholder={`# Título Principal
+
+## Seção 1
+- Item A
+  - Subitem A1
+  - Subitem A2
+- Item B
+
+## Seção 2
+- Item C
+- Item D`}
         spellCheck={false}
       />
     </div>
   );
 }
-
-export default TextEditor;

@@ -226,9 +226,11 @@ export function downloadMarkdown(markdown: string, fileName: string): void {
   downloadBlob(blob, `${fileName}.md`);
 }
 
-export default {
+const exporters = {
   exportToSvg,
   exportToPng,
   exportToPdf,
   downloadMarkdown,
 };
+
+export default exporters;

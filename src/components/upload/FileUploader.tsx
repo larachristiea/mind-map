@@ -46,6 +46,7 @@ export function FileUploader() {
     if (files.length > 0) {
       handleFileSelect(files[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileSelect = useCallback((file: File) => {

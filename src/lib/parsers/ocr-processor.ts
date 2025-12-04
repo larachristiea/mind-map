@@ -160,4 +160,6 @@ export async function terminateOcrWorker(): Promise<void> {
   }
 }
 
-export default { processPdfWithOcr, processImageWithOcr, terminateOcrWorker };
+const ocrProcessor = { processPdfWithOcr, processImageWithOcr, terminateOcrWorker };
+
+export default ocrProcessor;

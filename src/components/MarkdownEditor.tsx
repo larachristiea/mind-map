@@ -4,29 +4,29 @@
 
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useMemo } from 'react';
 import { useMindMapStore } from '@/store/mindmapStore';
 import { createMindMapData } from '@/lib/markdown/parser';
-import { debounce } from '@/lib/utils';
 import { Info, ChevronDown, ChevronUp } from 'lucide-react';
 
 export function MarkdownEditor() {
   const { markdown, setMarkdown, setMindMapData, file } = useMindMapStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showTips, setShowTips] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
   // Detectar se tem separador
   const hasSeparator = markdown?.match(/^(-{3,}|_{3,})$/m);
   const separatorCount = markdown?.match(/^(-{3,}|_{3,})$/gm)?.length || 0;
   
-  // Debounce da atualização do mind map
-  const updateMindMap = useCallback(
-    debounce((md: string) => {
+  // Função para atualizar o mind map com debounce
+  const updateMindMap = useCallback((md: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
       const data = createMindMapData(md, file?.name.replace(/\.[^.]+$/, '') || 'Mind Map');
       setMindMapData(data);
-    }, 300),
-    [setMindMapData, file]
-  );
+    }, 300);
+  }, [setMindMapData, file]);
   
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
