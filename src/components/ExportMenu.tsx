@@ -23,7 +23,7 @@ interface ExportMenuProps {
 export function ExportMenu({ mindmapRef }: ExportMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [exporting, setExporting] = useState<string | null>(null);
-  const { mindMapData, file, markdown } = useMindMapStore();
+  const { mindMapData, file } = useMindMapStore();
   
   // Limpar nome do arquivo
   const rawName = file?.name.replace(/\.[^.]+$/, '') || mindMapData?.title || 'mindmap';
@@ -78,30 +78,12 @@ export function ExportMenu({ mindmapRef }: ExportMenuProps) {
     
     setExporting('pdf');
     try {
-      // Limpar título
-      const cleanTitle = (mindMapData?.title || 'Mind Map')
-        .replace(/[^\w\s\-:áàâãéèêíìîóòôõúùûçÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/gi, '')
-        .trim() || 'Mind Map';
-      
-      // Verificar se tem separadores para multi-página
-      const hasSeparator = markdown?.match(/^(-{3,}|_{3,})$/m);
-      
       await exportPdf(
         svgElement, 
-        `${baseFilename}`, 
-        {
-          title: cleanTitle,
-          orientation: 'auto',
-          scale: 2,
-        },
-        markdown
+        `${baseFilename}`
       );
       
-      if (hasSeparator) {
-        toast.success('PDF multi-página exportado!');
-      } else {
-        toast.success('PDF exportado!');
-      }
+      toast.success('PDF exportado!');
     } catch (err) {
       toast.error('Erro ao exportar PDF');
       console.error(err);
@@ -110,9 +92,6 @@ export function ExportMenu({ mindmapRef }: ExportMenuProps) {
       setIsOpen(false);
     }
   };
-  
-  // Verificar se tem separadores
-  const hasSeparator = markdown?.match(/^(-{3,}|_{3,})$/m);
   
   const exportOptions = [
     {
@@ -134,7 +113,7 @@ export function ExportMenu({ mindmapRef }: ExportMenuProps) {
     {
       id: 'pdf',
       label: 'PDF',
-      description: hasSeparator ? 'Multi-página (usa ---)' : 'Para impressão',
+      description: 'Alta resolução',
       icon: File,
       action: handleExportPdf,
       color: 'text-red-600',
