@@ -26,9 +26,7 @@ export function Header({ mindmapRef }: HeaderProps) {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
-              <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 5 L90 28 L90 72 L50 95 L10 72 L10 28 Z" fill="#FFD700"/>
-              </svg>
+              <img src="/hexagon.svg" alt="Hexagon" className="w-10 h-10" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gold">Mind Map</h1>
