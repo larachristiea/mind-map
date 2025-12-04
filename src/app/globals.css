@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ESTILOS GLOBAIS - COMEIA MIND MAP
+   ============================================ */
+
+:root {
+  --color-brand: 14 165 233; /* sky-500 */
+}
+
+/* Base */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply antialiased;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
+/* Seleção de texto */
+::selection {
+  @apply bg-brand-200 text-brand-900;
+}
+
+/* Focus ring global */
+*:focus-visible {
+  @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+}
+
+/* ============================================
+   MARKMAP CUSTOMIZATIONS
+   ============================================ */
+
+.markmap {
+  @apply w-full h-full;
+}
+
+.markmap > svg {
+  @apply w-full h-full;
+}
+
+/* Nós do Markmap */
+.markmap-node {
+  cursor: pointer;
+}
+
+.markmap-node-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+}
+
+.markmap-node-circle {
+  cursor: pointer;
+}
+
+/* Links do Markmap */
+.markmap-link {
+  fill: none;
+}
+
+/* Animações do Markmap */
+.markmap-node,
+.markmap-link {
+  transition: all 0.3s ease;
+}
+
+/* Hover effects */
+.markmap-node:hover .markmap-node-text {
+  font-weight: 600;
+}
+
+/* ============================================
+   COMPONENTES UTILITÁRIOS
+   ============================================ */
+
+/* Container com gradiente */
+.gradient-bg {
+  @apply bg-gradient-to-br from-gray-50 via-white to-brand-50;
+}
+
+/* Glass effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-md;
+}
+
+/* Card hover */
+.card-hover {
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+}
+
+/* Button press effect */
+.btn-press {
+  @apply active:scale-95 transition-transform;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Pulse animation para loading */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+/* ============================================
+   DRAG AND DROP STYLES
+   ============================================ */
+
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  @apply opacity-50 shadow-2xl scale-105;
+}
+
+.drop-indicator {
+  @apply bg-brand-500/20 border-2 border-brand-500 border-dashed rounded-lg;
+}
+
+/* ============================================
+   EDITOR STYLES
+   ============================================ */
+
+/* Textarea do editor */
+.editor-textarea {
+  @apply font-mono text-sm leading-relaxed;
+  tab-size: 2;
+}
+
+.editor-textarea:focus {
+  @apply outline-none;
+}
+
+/* Syntax highlighting básico (opcional) */
+.editor-textarea::placeholder {
+  @apply text-gray-400;
+}
+
+/* ============================================
+   PRESENTATION MODE
+   ============================================ */
+
+.presentation-mode {
+  @apply fixed inset-0 z-50 bg-white;
+}
+
+.presentation-controls {
+  @apply fixed bottom-0 left-0 right-0 p-4;
+  @apply bg-gradient-to-t from-black/50 to-transparent;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .markmap-node-text {
+    font-size: 12px;
+  }
+  
+  .editor-textarea {
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .markmap {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
