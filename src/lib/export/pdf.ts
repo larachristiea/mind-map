@@ -17,23 +17,41 @@ export async function exportPdf(
   markdown?: string
 ): Promise<void> {
   const { 
-    title = 'Mind Map',
-    orientation = 'landscape', 
+    orientation = 'auto', 
     scale = 2,
-    includeTitle = false,
-    includeDate = false,
-    includePageNumbers = false,
   } = options;
   
-  // Detectar separadores para multi-página
-  const sections = markdown ? markdown.split(/^-{3,}$|^_{3,}$/m).filter(s => s.trim()) : [markdown || ''];
-  const isMultiPage = sections.length > 1 && markdown;
+  // Clonar e preparar SVG
+  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
   
-  const svgData = new XMLSerializer().serializeToString(svgElement);
+  const bbox = svgElement.getBBox();
+  const width = svgElement.clientWidth || bbox.width + 40;
+  const height = svgElement.clientHeight || bbox.height + 40;
+  
+  clonedSvg.setAttribute('width', String(width));
+  clonedSvg.setAttribute('height', String(height));
+  clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  
+  // Fundo branco
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('width', '100%');
+  rect.setAttribute('height', '100%');
+  rect.setAttribute('fill', 'white');
+  clonedSvg.insertBefore(rect, clonedSvg.firstChild);
+  
+  // Inline styles
+  const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+  styleElement.textContent = `
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  `;
+  clonedSvg.insertBefore(styleElement, clonedSvg.firstChild);
+  
+  const svgData = new XMLSerializer().serializeToString(clonedSvg);
   const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(svgBlob);
   
   const img = new Image();
+  img.crossOrigin = 'anonymous';
   
   return new Promise((resolve, reject) => {
     img.onload = () => {
@@ -45,15 +63,15 @@ export async function exportPdf(
         return;
       }
       
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
       
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.scale(scale, scale);
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0, width, height);
       
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       
       // Determinar orientação
       const pdfOrientation = orientation === 'auto' 
@@ -66,34 +84,20 @@ export async function exportPdf(
         format: [canvas.width, canvas.height],
       });
       
-      // Header com título
-      if (includeTitle && title) {
-        pdf.setFontSize(16);
-        pdf.text(title, 20, 30);
-      }
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       
-      // Data
-      if (includeDate) {
-        pdf.setFontSize(10);
-        pdf.text(new Date().toLocaleDateString('pt-BR'), canvas.width - 100, 30);
-      }
-      
-      const yOffset = (includeTitle || includeDate) ? 50 : 0;
-      pdf.addImage(imgData, 'PNG', 0, yOffset, canvas.width, canvas.height - yOffset);
-      
-      // Número da página
-      if (includePageNumbers) {
-        pdf.setFontSize(10);
-        pdf.text('1', canvas.width / 2, canvas.height - 20);
-      }
-      
-      pdf.save(filename);
+      const finalFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+      pdf.save(finalFilename);
       
       URL.revokeObjectURL(url);
       resolve();
     };
     
-    img.onerror = reject;
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load SVG'));
+    };
+    
     img.src = url;
   });
 }
