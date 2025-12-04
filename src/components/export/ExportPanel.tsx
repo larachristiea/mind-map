@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useAppStore } from '@/store';
+import { useMindMapStore } from '@/store/mindmapStore';
 import { Button } from '@/components/ui/Button';
 import { 
   Download, 
@@ -57,18 +57,18 @@ const EXPORT_OPTIONS: ExportOption[] = [
 ];
 
 export function ExportPanel() {
-  const { document, markdown, setPresentationMode } = useAppStore();
+  const { markdown, mindMapData } = useMindMapStore();
   const [isExporting, setIsExporting] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleExport = useCallback(async (format: ExportFormat) => {
-    if (!document) return;
+    if (!mindMapData) return;
 
     setIsExporting(true);
     setShowDropdown(false);
 
     try {
-      const fileName = document.title || 'mindmap';
+      const fileName = mindMapData.title || 'mindmap';
       const svgElement = globalThis.document.querySelector('.markmap svg') as SVGSVGElement;
 
       if (!svgElement && format !== 'md') {
