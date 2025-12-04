@@ -6,8 +6,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAppStore } from '@/store';
-import { Button } from '@/components/ui/Button';
+import { useMindMapStore } from '@/store';
 import { TextEditor } from './TextEditor';
 import { DragDropEditor } from './DragDropEditor';
 import { Code, LayoutList } from 'lucide-react';
@@ -17,7 +16,7 @@ type EditorMode = 'text' | 'visual';
 
 export function Editor() {
   const [mode, setMode] = useState<EditorMode>('text');
-  const { markdown, setMarkdown, document } = useAppStore();
+  const { markdown, setMarkdown, file } = useMindMapStore();
 
   return (
     <div className="h-full flex flex-col">
@@ -27,9 +26,11 @@ export function Editor() {
           <h3 className="font-semibold text-[rgb(var(--foreground))]">
             Editor
           </h3>
-          <span className="text-xs text-[rgb(var(--muted-foreground))] bg-[rgb(var(--secondary))] px-2 py-0.5 rounded">
-            {document?.originalFileName}
-          </span>
+          {file && (
+            <span className="text-xs text-[rgb(var(--muted-foreground))] bg-[rgb(var(--secondary))] px-2 py-0.5 rounded">
+              {file.name}
+            </span>
+          )}
         </div>
 
         {/* Mode toggle */}
