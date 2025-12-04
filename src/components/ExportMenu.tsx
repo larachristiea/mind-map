@@ -88,16 +88,13 @@ export function ExportMenu({ mindmapRef }: ExportMenuProps) {
       
       await exportPdf(
         svgElement, 
-        `${baseFilename}.pdf`, 
+        `${baseFilename}`, 
         {
           title: cleanTitle,
           orientation: 'auto',
-          includeTitle: true,
-          includeDate: true,
-          includePageNumbers: !!hasSeparator,
-          scale: 3,
+          scale: 2,
         },
-        markdown // Passa o markdown para detectar separadores
+        markdown
       );
       
       if (hasSeparator) {
