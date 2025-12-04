@@ -1,4 +1,4 @@
-// PNG Export - PRESERVA ESTILOS
+// PNG Export - SEM CORS
 export async function exportPng(
   svgElement: SVGSVGElement,
   filename: string,
@@ -11,12 +11,12 @@ export async function exportPng(
       // Clonar SVG
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
 
-      // Pegar dimensões do SVG original
+      // Pegar dimensões
       const bbox = svgElement.getBoundingClientRect();
       const width = bbox.width;
       const height = bbox.height;
 
-      // Copiar estilos computados
+      // Copiar estilos inline
       const allElements = clonedSvg.querySelectorAll('*');
       const originalElements = svgElement.querySelectorAll('*');
 
@@ -33,7 +33,7 @@ export async function exportPng(
         }
       });
 
-      // Configurar dimensões
+      // Configurar SVG
       clonedSvg.setAttribute('width', String(width));
       clonedSvg.setAttribute('height', String(height));
       clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -43,28 +43,27 @@ export async function exportPng(
       bgRect.setAttribute('width', String(width));
       bgRect.setAttribute('height', String(height));
       bgRect.setAttribute('fill', 'white');
-      bgRect.setAttribute('x', '0');
-      bgRect.setAttribute('y', '0');
       clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
 
-      // Converter para data URL
+      // Converter SVG para Data URL inline (SEM BLOB)
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
+      const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+
+      // Criar canvas e imagem
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Canvas não suportado'));
+        return;
+      }
+
+      canvas.width = width * scale;
+      canvas.height = height * scale;
 
       const img = new Image();
+
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          reject(new Error('Canvas não suportado'));
-          return;
-        }
-
-        canvas.width = width * scale;
-        canvas.height = height * scale;
-
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.scale(scale, scale);
@@ -76,25 +75,22 @@ export async function exportPng(
             return;
           }
 
-          const pngUrl = URL.createObjectURL(blob);
+          const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = pngUrl;
+          link.href = url;
           link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          URL.revokeObjectURL(pngUrl);
           URL.revokeObjectURL(url);
           resolve();
         }, 'image/png', 1.0);
       };
 
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Falha ao carregar imagem'));
-      };
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
 
-      img.src = url;
+      // Usar data URL diretamente
+      img.src = svgDataUrl;
 
     } catch (err) {
       reject(err);

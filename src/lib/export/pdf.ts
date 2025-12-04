@@ -1,4 +1,4 @@
-// PDF Export - PRESERVA ESTILOS
+// PDF Export - SEM CORS
 import { jsPDF } from 'jspdf';
 
 export async function exportPdf(
@@ -10,12 +10,12 @@ export async function exportPdf(
       // Clonar SVG
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
 
-      // Pegar dimensões do SVG original
+      // Pegar dimensões
       const bbox = svgElement.getBoundingClientRect();
       const width = bbox.width;
       const height = bbox.height;
 
-      // Copiar estilos computados
+      // Copiar estilos inline
       const allElements = clonedSvg.querySelectorAll('*');
       const originalElements = svgElement.querySelectorAll('*');
 
@@ -32,7 +32,7 @@ export async function exportPdf(
         }
       });
 
-      // Configurar dimensões
+      // Configurar SVG
       clonedSvg.setAttribute('width', String(width));
       clonedSvg.setAttribute('height', String(height));
       clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -42,11 +42,13 @@ export async function exportPdf(
       bgRect.setAttribute('width', String(width));
       bgRect.setAttribute('height', String(height));
       bgRect.setAttribute('fill', 'white');
-      bgRect.setAttribute('x', '0');
-      bgRect.setAttribute('y', '0');
       clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
 
-      // Converter para imagem
+      // Converter SVG para Data URL inline (SEM BLOB)
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
+      const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+
+      // Criar canvas
       const scale = 4;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -59,11 +61,8 @@ export async function exportPdf(
       canvas.width = width * scale;
       canvas.height = height * scale;
 
-      const svgData = new XMLSerializer().serializeToString(clonedSvg);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
       const img = new Image();
+
       img.onload = () => {
         try {
           ctx.fillStyle = 'white';
@@ -109,21 +108,17 @@ export async function exportPdf(
           const finalFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
           pdf.save(finalFilename);
 
-          URL.revokeObjectURL(url);
           resolve();
         } catch (err) {
           console.error('Erro ao gerar PDF:', err);
-          URL.revokeObjectURL(url);
           reject(err);
         }
       };
 
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Falha ao processar'));
-      };
+      img.onerror = () => reject(new Error('Falha ao processar'));
 
-      img.src = url;
+      // Usar data URL diretamente
+      img.src = svgDataUrl;
 
     } catch (err) {
       reject(err);
