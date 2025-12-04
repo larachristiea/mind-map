@@ -61,6 +61,16 @@ export interface ExtractedStructure {
 }
 
 /**
+ * Bloco de texto para processamento
+ */
+export interface TextBlock {
+  content: string;
+  type: 'heading' | 'paragraph' | 'bullet' | 'numbered' | 'list-item' | 'section' | 'title';
+  level: number;
+  indent: number;
+}
+
+/**
  * Metadados do arquivo
  */
 export interface FileMetadata {

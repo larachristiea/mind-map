@@ -58,7 +58,7 @@ export function useMarkmap(options: UseMarkmapOptions = {}) {
           '#dc2626', // Vermelho
           '#0891b2', // Ciano
         ];
-        return colors[node.state?.depth % colors.length] || colors[0];
+        return colors[(node.state?.depth ?? 0) % colors.length] || colors[0];
       },
     };
     
