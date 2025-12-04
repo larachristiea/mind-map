@@ -58,9 +58,24 @@ export default function Home() {
             >
               {/* Hero */}
               <div className="text-center mb-12">
+                {/* Logo Comeia */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-8 flex justify-center"
+                >
+                  <svg width="240" height="120" viewBox="0 0 1074 622" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Hexágono */}
+                    <path d="M859.5 155.5L1024 248.5V434.5L859.5 527.5L695 434.5V248.5L859.5 155.5Z" fill="#FFD700"/>
+                    {/* Texto "comeia" */}
+                    <text x="10" y="450" fontFamily="Arial, sans-serif" fontSize="280" fontWeight="bold" fill="#FFD700">comeia</text>
+                  </svg>
+                </motion.div>
+
                 <motion.h1
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
                   className="text-4xl md:text-5xl font-bold text-white mb-4"
                 >
                   Transforme documentos em{' '}
