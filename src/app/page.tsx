@@ -64,11 +64,13 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-8 flex justify-center"
                 >
-                  <svg width="240" height="120" viewBox="0 0 1074 622" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Hexágono */}
-                    <path d="M859.5 155.5L1024 248.5V434.5L859.5 527.5L695 434.5V248.5L859.5 155.5Z" fill="#FFD700"/>
-                    {/* Texto "comeia" */}
-                    <text x="10" y="450" fontFamily="Arial, sans-serif" fontSize="280" fontWeight="bold" fill="#FFD700">comeia</text>
+                  <svg width="280" height="80" viewBox="0 0 560 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Texto "come" */}
+                    <text x="20" y="120" fontFamily="Arial, sans-serif" fontSize="100" fontWeight="bold" fill="#FFD700">come</text>
+                    {/* Hexágono no lugar do "i" */}
+                    <path d="M480 30 L520 50 L520 90 L480 110 L440 90 L440 50 Z" fill="#FFD700"/>
+                    {/* Texto "a" */}
+                    <text x="510" y="120" fontFamily="Arial, sans-serif" fontSize="100" fontWeight="bold" fill="#FFD700">a</text>
                   </svg>
                 </motion.div>
 
